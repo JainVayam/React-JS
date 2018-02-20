@@ -6,66 +6,88 @@ class App extends React.Component {
   
   constructor(props) {
     super(props);     
-    this.state = {
-      list: [],
+    this.state = { 
       text: "",
+      list: [],
+      copyList: [],
       message : "" 
     }
     this.updateState = this.updateState.bind(this);
     this.updateList = this.updateList.bind(this);
-    this.clearState = this.clearState.bind(this);
-    this.resetState = this.resetState.bind(this);
-    this.deleteState = this.deleteState.bind(this);
+    this.clearList = this.clearList.bind(this);
+    this.resetList = this.resetList.bind(this);
+    this.deleteListItem = this.deleteListItem.bind(this);
+    this.filterList = this.filterList.bind(this);
     this.isChangeEvent = false;
+    this.isChangeEventMessage = false;
   };
    
   updateState(e) {
-    this.setState({text: e.target.value}) 
+    this.isChangeEvent = false;
+    this.setState({text: e.target.value}, () => {this.isChangeEvent = true})
   }
 
   updateList(e) {
-    let response = this.validate(this.state.text)
-    if(response == "success"){
-      this.state.list.push(this.state.text)
-      this.setState({list:this.state.list}, () => this.isChangeEvent = true)
-      this.setState({copyList: this.state.list})
+    this.isChangeEventMessage = true;
+    const response = this.validation(this.state.text) 
+    if(response == "success") {
+      let {text, list} = this.state;
+      list.push(text);
+      this.setState({list, copyList: list, message:response}) 
     } else {
-      this.setState({message: response})
+      this.setState({message: response})    
     }
+   console.log(e.target)
+
   }
   
-  validate(text) {
-    let whiteSpaceFlag, textSpaces= "";
-    if (text == "")  return "Please Enter Something"
-    for (let index = 0 ; index < this.state.list.length; index++) { 
-      if (this.state.list[index] == text) {
-        return "Duplicate Found"                   
-      } 
+  validation(text) {
+    let whiteSpaceFlag, error = "",check
+    if (text.trim() == "") {
+      consol
+      error = "Enter Something"      
+    } else {
+      check = this.state.list.indexOf(text.trim());
+      if (check != -1) error = "Duplicate Found"
     }
-    for (let index = 0 ; index < text.length; index++) {
-      if (text[index] != " ") {
-        whiteSpaceFlag = 0        
-      }
-    }    
-    if (whiteSpaceFlag != 0) return "Enter something which isn't space";
-    return "success";
+    if (error == "") error = "success"  
+    return error
   } 
-  
-  clearState(e) {
-    this.state.list =[];
+      
+  clearList(e) {
+    this.isChangeEvent = true;
+    this.isChangeEventMessage = false;
+    this.state.list = [];
     this.setState({list: this.state.list})
   }
 
-  resetState(e) {
-    this.setState({list:this.state.copyList})
+  resetList(e) {
+    this.isChangeEvent = true;
+    this.isChangeEventMessage = false;
+    this.setState({list: this.state.copyList})
   }
 
-  deleteState(index) {
+  deleteListItem(index) {
+    this.isChangeEvent = true;
+    this.isChangeEventMessage = false;
     this.state.list.splice(index, 1)
-    this.setState({list:this.state.list});
+    this.setState({list: this.state.list});
+  }
+
+  filterList(inputText) {
+    this.isChangeEventMessage = false;
+    this.state.list = this.state.copyList
+    const filterArray = this.state.list.filter((value) => {
+      if(inputText == value.slice(0, inputText.length)) return true
+      else return false   
+    })
+    this.state.list = filterArray
+    this.setState({list: filterArray})
   }
    
   render() {
+    const {list, message} = this.state;
+
     return (
       <div> 
         <h1>React To-Do App </h1>
@@ -75,7 +97,7 @@ class App extends React.Component {
           id="textbox" 
           type="text"
           placeholder="create new item"
-          onChange = {this.updateState}/>          
+          onChange={this.updateState}/>          
         <br/>
         <button 
           onClick={this.updateList}>
@@ -83,20 +105,25 @@ class App extends React.Component {
         </button>
         <ListItems 
           isChangeEvent={this.isChangeEvent}
-          listData={this.state.list}
-          messageType={this.state.message}
-          deleteMethod={this.deleteState}>
+          listData={list}
+          messageType={message}
+          deleteMethod={this.deleteListItem}
+          filterMethod={this.filterList}>
         </ListItems>
         <br/><br/>
         <Message 
-          messageText={this.state.message}>
+          messageText={message}
+          isChangeEvent={this.isChangeEvent}
+          isChangeEventMessage = {this.isChangeEventMessage}>
         </Message>
         <br/><br/>
         <button 
-          onClick={this.clearState} >Clear the List
+          onClick={this.clearList}>
+          Clear the List
         </button>
         <button 
-          onClick={this.resetState} >Reset the List
+          onClick={this.resetList}>
+          Reset the List
         </button>         
       </div>
     );
@@ -104,15 +131,4 @@ class App extends React.Component {
 }
 
 export default App;
-
-  
-
-
-
-
-
-
-
-
-
 

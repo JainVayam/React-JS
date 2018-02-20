@@ -1,19 +1,33 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 class Message extends React.Component {
 
-  shouldComponentUpdate () {
-    if (this.props.messageText != "success") return true
-    else return false
+  shouldComponentUpdate(nextProps) {
+    const {isChangeEvent, isChangeEventMessage} = nextProps
+    return isChangeEvent && isChangeEventMessage;
   } 
+
+  alertMessage() {
+    const {messageText} = this.props
+    if (messageText != "success") {
+      if (messageText != "") alert(messageText)
+    }    
+  }
   
   render () {
     return (
       <div>
-        <input type="text" placeholder="Message" value={this.props.messageText} />
+        {this.alertMessage()}
       </div>
     )
   } 
+}
+
+Message.propTypes = {
+  isChangeEvent: PropTypes.boolean,
+  isChangeEventMessage: PropTypes.boolean,
+  messageText: PropTypes.string.isRequired
 }
 
 export default Message;
